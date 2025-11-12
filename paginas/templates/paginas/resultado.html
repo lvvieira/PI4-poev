@@ -1,0 +1,52 @@
+
+
+
+
+{% extends 'usuarios/base.html' %}
+{% load static %}
+
+{% block conteudo %}
+  <!-- pesquisa section -->
+
+  <section class="about_section layout_padding">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="detail-box">
+            <div class="heading_container">
+              <h2>
+                Resultado da Pesquisa de Satisfação
+              </h2>
+            </div>
+            <p>Acompanhe os resultados</p>
+
+            <!-- Botão para participar da pesquisa -->
+            <div class="mb-4">
+              <a href="https://poev.com.br/pesquisa/" class="btn btn-primary">
+                Participar da Pesquisa
+              </a>
+            </div>
+
+            <!-- Formulário embutido -->
+            <div class="mt-4" style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden; height: 800px;">
+              <iframe 
+                src="https://forms.office.com/Pages/AnalysisPage.aspx?AnalyzerToken=OYY2DPlJx2uP8uc0PbBwRRc0xCM5yFUp&id=V0Tn3lHXEUClxERWDPi0FRyH-_AxeDJBuVwaWLaxbI5UOEY5RkREWTYzRDgzQUlOVVVDSFhSOTkzRC4u" 
+                width="100%" 
+                height="100%" 
+                frameborder="0" 
+                style="border: none;">
+                Carregando formulário...
+              </iframe>
+            </div>
+
+            <div class="mt-4 text-center">
+              <a href="https://poev.com.br/contato/" class="btn btn-secondary">
+                ← Voltar
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

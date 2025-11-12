@@ -1,0 +1,143 @@
+{% extends 'usuarios/base.html' %}
+{% load static %}
+
+{% block conteudo %}
+<section class="about_section layout_padding">
+  <div class="container">
+    <h2 class="mb-4">📊 Painel de Administração</h2>
+
+    <!-- Gráfico: Usuários por mês -->
+    <div class="mb-5">
+      <h4>Usuários novos (últimos 6 meses)</h4>
+      <canvas id="userChart"></canvas>
+    </div>
+
+    <!-- Gráfico: Alunos x Anunciantes -->
+    <div class="mb-5">
+      <h4>Distribuição de Perfis</h4>
+      <canvas id="perfilChart"></canvas>
+    </div>
+
+    <!-- Gráfico: Alunos por Curso -->
+    <div class="mb-5">
+      <h4>Alunos por Curso</h4>
+      <canvas id="cursoChart"></canvas>
+    </div>
+
+    <!-- Gráfico: Vagas Ativas/Inativas -->
+    <div class="mb-5">
+      <h4>Status das Vagas</h4>
+      <canvas id="vagaChart"></canvas>
+    </div>
+
+    <!-- Tabela com as últimas vagas -->
+    <h4>Últimas Vagas Cadastradas</h4>
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Empresa</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for vaga in ultimas_vagas %}
+          <tr>
+            <td>{{ vaga.nome }}</td>
+            <td>{{ vaga.empresa.nome }}</td>
+            <td>{% if not vaga.inativa %}Ativa{% else %}Inativa{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+<h4>Últimos Acessos</h4>
+<div class="table-responsive">
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>Usuário</th>
+        <th>Email</th>
+        <th>Último Login</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in recent_logins %}
+      <tr>
+        <td>{{ user.username }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.last_login|date:"d/m/Y H:i" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+
+  </div>
+</section>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Usuários por mês
+  new Chart(document.getElementById('userChart'), {
+    type: 'bar',
+    data: {
+      labels: [{% for item in users_by_month %}"{{ item.month|date:'M/Y' }}",{% endfor %}],
+      datasets: [{
+        label: 'Usuários',
+        data: [{% for item in users_by_month %}{{ item.count }},{% endfor %}],
+        backgroundColor: 'rgba(54, 162, 235, 0.7)'
+      }]
+    },
+    options: { scales: { y: { beginAtZero: true } } }
+  });
+
+  // Alunos x Anunciantes
+  new Chart(document.getElementById('perfilChart'), {
+    type: 'pie',
+    data: {
+      labels: ['Alunos', 'Anunciantes'],
+      datasets: [{
+        data: [{{ total_alunos }}, {{ total_anunciantes }}],
+        backgroundColor: ['#42a5f5', '#66bb6a']
+      }]
+    }
+  });
+
+  // Alunos por Curso
+  new Chart(document.getElementById('cursoChart'), {
+    type: 'bar',
+    data: {
+      labels: [{% for item in alunos_por_curso %}"{{ item.curso }}",{% endfor %}],
+      datasets: [{
+        label: 'Qtd de Alunos',
+        data: [{% for item in alunos_por_curso %}{{ item.total }},{% endfor %}],
+        backgroundColor: 'rgba(255, 159, 64, 0.7)'
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      scales: { x: { beginAtZero: true } }
+    }
+  });
+
+  // Vagas Ativas/Inativas
+  new Chart(document.getElementById('vagaChart'), {
+    type: 'pie',
+    data: {
+      labels: ['Ativas', 'Inativas'],
+      datasets: [{
+        data: [{{ vagas_ativas }}, {{ vagas_inativas }}],
+        backgroundColor: ['#4caf50', '#f44336']
+      }]
+    }
+  });
+</script>
+{% endblock %}
+

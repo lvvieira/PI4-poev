@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Dashboard • Feedback POEV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+</head>
+<body class="bg-slate-950 text-slate-200">
+  <div class="max-w-7xl mx-auto p-4">
+    <header class="mb-6">
+      <h1 class="text-3xl font-extrabold tracking-tight">Dashboard de Feedback • POEV</h1>
+      <p class="text-slate-400 mt-1">Visão geral das respostas do formulário.</p>
+    </header>
+
+    <!-- Cards de NPS -->
+    <section class="grid md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4">
+        <div class="text-slate-400 text-sm">NPS</div>
+        <div id="npsScore" class="text-4xl font-extrabold mt-1">–</div>
+      </div>
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4">
+        <div class="text-slate-400 text-sm">Promotores (9–10)</div>
+        <div id="npsProm" class="text-3xl font-bold mt-1">–</div>
+      </div>
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4">
+        <div class="text-slate-400 text-sm">Neutros (7–8)</div>
+        <div id="npsPass" class="text-3xl font-bold mt-1">–</div>
+      </div>
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4">
+        <div class="text-slate-400 text-sm">Detratores (0–6)</div>
+        <div id="npsDetr" class="text-3xl font-bold mt-1">–</div>
+      </div>
+    </section>
+
+    <!-- Grids -->
+    <section class="grid lg:grid-cols-2 gap-6">
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4">
+        <h2 class="font-bold text-lg mb-2">Distribuição da Satisfação Geral</h2>
+        <canvas id="chartSatisf"></canvas>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4">
+        <h2 class="font-bold text-lg mb-2">Notas Médias por Aspecto</h2>
+        <canvas id="chartRatings"></canvas>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4">
+        <h2 class="font-bold text-lg mb-2">Problemas Relatados</h2>
+        <canvas id="chartProb"></canvas>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4">
+        <h2 class="font-bold text-lg mb-2">Distribuição por Dispositivo</h2>
+        <canvas id="chartDisp"></canvas>
+      </div>
+
+      <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-4 lg:col-span-2">
+        <h2 class="font-bold text-lg mb-2">Respostas por Dia</h2>
+        <canvas id="chartTime"></canvas>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const fmt = (n)=> (n===null||n===undefined) ? 0 : n;
+
+    async function loadData(){
+      const resp = await fetch("{% url 'poev_feedback_dashboard_data' %}");
+      const data = await resp.json();
+
+      // NPS cards
+      document.getElementById('npsScore').textContent = data.nps.score.toFixed(1);
+      document.getElementById('npsProm').textContent  = data.nps.promoters;
+      document.getElementById('npsPass').textContent  = data.nps.passives;
+      document.getElementById('npsDetr').textContent  = data.nps.detractors;
+
+      // Satisfação
+      new Chart(document.getElementById('chartSatisf'), {
+        type: 'pie',
+        data: { labels: data.satisfacao.labels, datasets: [{ data: data.satisfacao.counts }] },
+        options: { plugins: { legend: { position: 'bottom' } } }
+      });
+
+      // Médias por aspecto (barra horizontal)
+      new Chart(document.getElementById('chartRatings'), {
+        type: 'bar',
+        data: { labels: data.ratings_avg.labels,
+          datasets: [{ data: data.ratings_avg.values }] },
+        options: {
+          indexAxis: 'y',
+          scales: { x: { suggestedMin: 0, suggestedMax: 5 } },
+          plugins: { legend: { display:false } }
+        }
+      });
+
+      // Problemas
+      new Chart(document.getElementById('chartProb'), {
+        type: 'pie',
+        data: { labels: data.problemas.labels, datasets: [{ data: data.problemas.counts }] },
+        options: { plugins: { legend: { position: 'bottom' } } }
+      });
+
+      // Dispositivo
+      new Chart(document.getElementById('chartDisp'), {
+        type: 'pie',
+        data: { labels: data.dispositivo.labels, datasets: [{ data: data.dispositivo.counts }] },
+        options: { plugins: { legend: { position: 'bottom' } } }
+      });
+
+      // Série temporal
+      new Chart(document.getElementById('chartTime'), {
+        type: 'line',
+        data: { labels: data.timeline.labels, datasets: [{ data: data.timeline.counts, fill:false, tension: .2 }] },
+        options: { plugins: { legend: { display:false } } }
+      });
+    }
+    loadData();
+  </script>
+</body>
+</html>
+

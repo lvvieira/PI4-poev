@@ -1,0 +1,325 @@
+{% extends 'usuarios/base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block conteudo %}
+    <div class="container">
+        <div class="login-box">
+            <img src="{% static 'images/poev.png' %}" alt="poev" width="80" height="80" class="d-inline-block align-middle">
+            <h1>Atualizar Perfil | POEV</h1>
+            <form method="post" action="" id="registro-form">
+                {% csrf_token %}
+                
+                <!-- Formulário do usuário (email, etc) -->
+                {{ user_form|crispy }}
+                
+                <!-- Formulário do aluno -->
+                <!-- Nome -->
+                <div class="form-group mb-3">
+                    <label for="{{ aluno_form.nome.id_for_label }}">Nome</label>
+                    {{ aluno_form.nome }}
+                    {% if aluno_form.nome.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ aluno_form.nome.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Telefone -->
+                <div class="form-group mb-3">
+                    <label for="{{ aluno_form.telefone.id_for_label }}">Telefone</label>
+                    {{ aluno_form.telefone }}
+                    <div class="invalid-feedback" id="telefone-error" style="display: none;">
+                        Por favor, insira um número de telefone válido.
+                    </div>
+                    {% if aluno_form.telefone.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ aluno_form.telefone.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Instituição -->
+                <div class="form-group mb-3">
+                    <label for="{{ aluno_form.instituicao.id_for_label }}">Instituição</label>
+                    {{ aluno_form.instituicao }}
+                    {% if aluno_form.instituicao.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ aluno_form.instituicao.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3" id="outra_instituicao_field" style="display: none;">
+                    <label for="{{ aluno_form.outra_instituicao.id_for_label }}">Outra Instituição</label>
+                    {{ aluno_form.outra_instituicao }}
+                    {% if aluno_form.outra_instituicao.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ aluno_form.outra_instituicao.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3" id="curso_field" style="display: none;">
+                    <label for="{{ aluno_form.curso.id_for_label }}">Curso</label>
+                    {{ aluno_form.curso }}
+                    {% if aluno_form.curso.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ aluno_form.curso.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3" id="outro_curso_field" style="display: none;">
+                    <label for="{{ aluno_form.outro_curso.id_for_label }}">Outro Curso</label>
+                    {{ aluno_form.outro_curso }}
+                    {% if aluno_form.outro_curso.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ aluno_form.outro_curso.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3" id="is_formado_field" style="display: none;">
+                    <label for="{{ aluno_form.is_formado.id_for_label }}">Status da Formação</label>
+                    {{ aluno_form.is_formado }}
+                    {% if aluno_form.is_formado.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ aluno_form.is_formado.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group mb-3" id="semestre_field" style="display: none;">
+                    <label for="{{ aluno_form.semestre.id_for_label }}">Semestre</label>
+                    {{ aluno_form.semestre }}
+                    <div class="invalid-feedback" id="semestre-error" style="display: none;">
+                        O semestre deve ser um número entre 1 e 14.
+                    </div>
+                    {% if aluno_form.semestre.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ aluno_form.semestre.errors }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="submit-btn">Atualizar</button>
+            </form>
+        </div>
+    </div>
+
+<script>
+// Função para aplicar máscara de telefone
+function mascaraTelefone(telefone) {
+    // Remove tudo que não é número
+    const numero = telefone.value.replace(/\D/g, '');
+    
+    // Aplica a máscara conforme o tamanho do número
+    if (numero.length <= 10) {
+        // Formato: (11) 9999-9999
+        telefone.value = numero.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    } else {
+        // Formato: (11) 99999-9999
+        telefone.value = numero.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    }
+}
+
+// Função para validar telefone
+function validarTelefone(telefone) {
+    // Remove tudo que não é número e verifica se tem entre 10 e 11 dígitos
+    const numero = telefone.value.replace(/\D/g, '');
+    return numero.length >= 10 && numero.length <= 11;
+}
+
+// Função para validar semestre
+function validarSemestre(semestre) {
+    const valor = parseInt(semestre.value);
+    return !isNaN(valor) && valor >= 1 && valor <= 14;
+}
+
+// Função para mostrar/ocultar erro
+function toggleErro(campo, isValid, errorElement) {
+    if (campo.value && !isValid) {
+        errorElement.style.display = 'block';
+        campo.classList.add('is-invalid');
+        campo.classList.remove('is-valid');
+    } else {
+        errorElement.style.display = 'none';
+        campo.classList.remove('is-invalid');
+        if (campo.value && isValid) {
+            campo.classList.add('is-valid');
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    var instituicaoField = document.getElementById('id_instituicao');
+    var outraInstituicaoField = document.getElementById('outra_instituicao_field');
+    var cursoField = document.getElementById('curso_field');
+    var outroCursoField = document.getElementById('outro_curso_field');
+    var isFormadoField = document.getElementById('id_is_formado');
+    var semestreField = document.getElementById('semestre_field');
+    
+    // Elementos para validação
+    const telefoneInput = document.getElementById('id_telefone');
+    const semestreInput = document.getElementById('id_semestre');
+    const telefoneError = document.getElementById('telefone-error');
+    const semestreError = document.getElementById('semestre-error');
+    const form = document.getElementById('registro-form');
+
+    // Função para alternar exibição dos campos com base na instituição selecionada
+    function toggleFields() {
+        var instituicaoSelecionada = instituicaoField ? instituicaoField.value : '';
+
+        if (instituicaoSelecionada === 'UNIVESP') {
+            // Mostrar o campo de cursos da UNIVESP
+            if (cursoField) cursoField.style.display = 'block';
+            if (isFormadoField && isFormadoField.parentElement) isFormadoField.parentElement.style.display = 'block';
+            if (outraInstituicaoField) outraInstituicaoField.style.display = 'none';
+            if (outroCursoField) outroCursoField.style.display = 'none';
+        } else if (instituicaoSelecionada === 'OUTRA') {
+            // Mostrar o campo para digitar outra instituição e outro curso
+            if (outraInstituicaoField) outraInstituicaoField.style.display = 'block';
+            if (outroCursoField) outroCursoField.style.display = 'block';
+            if (cursoField) cursoField.style.display = 'none';
+            if (isFormadoField && isFormadoField.parentElement) isFormadoField.parentElement.style.display = 'block';
+        } else {
+            // Caso a instituição seja outra, esconder todos os campos
+            if (outraInstituicaoField) outraInstituicaoField.style.display = 'none';
+            if (cursoField) cursoField.style.display = 'none';
+            if (outroCursoField) outroCursoField.style.display = 'none';
+            if (isFormadoField && isFormadoField.parentElement) isFormadoField.parentElement.style.display = 'none';
+            if (semestreField) semestreField.style.display = 'none';
+        }
+    }
+
+    // Função para alternar exibição do campo semestre baseado no valor do campo is_formado
+    function toggleSemestreField() {
+        var isFormadoValue = isFormadoField ? isFormadoField.value : '';
+
+        if (isFormadoValue === 'EM ANDAMENTO') {
+            if (semestreField) semestreField.style.display = 'block';
+        } else {
+            if (semestreField) semestreField.style.display = 'none';
+            if (semestreInput) semestreInput.value = '';
+        }
+    }
+
+    // Configurações para o campo de telefone
+    if (telefoneInput) {
+        // Aplica máscara enquanto digita
+        telefoneInput.addEventListener('input', function() {
+            mascaraTelefone(this);
+            toggleErro(this, validarTelefone(this), telefoneError);
+        });
+        
+        // Valida ao perder o foco
+        telefoneInput.addEventListener('blur', function() {
+            toggleErro(this, validarTelefone(this), telefoneError);
+        });
+        
+        // Aplica máscara inicial se já houver valor
+        if (telefoneInput.value) {
+            mascaraTelefone(telefoneInput);
+            toggleErro(telefoneInput, validarTelefone(telefoneInput), telefoneError);
+        }
+    }
+
+    // Configurações para o campo de semestre
+    if (semestreInput) {
+        // Valida enquanto digita (permite apenas números e valida limite)
+        semestreInput.addEventListener('input', function() {
+            // Permite apenas números
+            this.value = this.value.replace(/\D/g, '');
+            
+            // Se tiver valor, valida o limite
+            if (this.value) {
+                const valor = parseInt(this.value);
+                if (valor > 14) {
+                    this.value = '14'; // Força o valor máximo
+                }
+            }
+            
+            toggleErro(this, validarSemestre(this), semestreError);
+        });
+        
+        // Valida ao perder o foco
+        semestreInput.addEventListener('blur', function() {
+            toggleErro(this, validarSemestre(this), semestreError);
+        });
+    }
+
+    // Validação antes do envio do formulário
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let hasError = false;
+            
+            // Valida telefone
+            if (telefoneInput && telefoneInput.value && !validarTelefone(telefoneInput)) {
+                if (telefoneError) telefoneError.style.display = 'block';
+                telefoneInput.classList.add('is-invalid');
+                if (!hasError) {
+                    telefoneInput.focus();
+                    hasError = true;
+                }
+            }
+            
+            // Valida semestre (apenas se estiver visível e com valor)
+            if (semestreInput && semestreField && semestreField.style.display !== 'none' && 
+                semestreInput.value && !validarSemestre(semestreInput)) {
+                if (semestreError) semestreError.style.display = 'block';
+                semestreInput.classList.add('is-invalid');
+                if (!hasError) {
+                    semestreInput.focus();
+                    hasError = true;
+                }
+            }
+            
+            // Se houver erro, impede o envio
+            if (hasError) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Remove a máscara do telefone antes de enviar (mantém apenas números)
+            if (telefoneInput && telefoneInput.value) {
+                telefoneInput.value = telefoneInput.value.replace(/\D/g, '');
+            }
+        });
+    }
+
+    // Chamar as funções ao carregar a página com base no valor atual
+    toggleFields();
+    toggleSemestreField();
+
+    // Atualizar os campos quando o usuário mudar a instituição
+    if (instituicaoField) {
+        instituicaoField.addEventListener('change', toggleFields);
+    }
+
+    // Atualizar o campo de semestre quando o valor de is_formado mudar
+    if (isFormadoField) {
+        isFormadoField.addEventListener('change', toggleSemestreField);
+    }
+});
+</script>
+
+<style>
+.is-valid {
+    border-color: #28a745 !important;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 0.875em;
+    color: #dc3545;
+}
+</style>
+
+{% endblock %}

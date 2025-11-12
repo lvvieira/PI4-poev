@@ -1,0 +1,185 @@
+  <!-- info section -->
+  <section class="info_section ">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-2 info_links">
+          <h4>
+            Menu
+          </h4>
+          <ul>
+            <li id="menu-inicio">
+              <a href="{% url 'homepage' %}">
+                Início
+              </a>
+            </li>
+            <li id="menu-sobre">
+              <a href="{% url 'sobre' %}">
+                Sobre
+              </a>
+            </li>
+            <li id="menu-contato">
+              <a href="{% url 'contato' %}">
+                Contato
+              </a>
+            </li>
+            <li id="menu-vagas">
+              <a href="{% url 'todas_vagas' %}">
+                Vagas
+              </a>
+            </li>
+            <li id="menu-cursos">
+              <a href="{% url 'todos_cursos' %}">
+                Cursos
+              </a>
+            </li>
+            <li id="menu-pesquisa">
+              <a href="{% url 'pesquisa' %}">
+                Pesquisa
+              </a>
+            </li>
+            <li id="menu-login">
+              <a href="{% url 'login' %}">
+                Entrar
+              </a>
+            </li>
+            <li id="menu-registrar">
+              <a href="{% url 'registrar' %}">
+                Registrar
+              </a>
+            </li>
+          </ul>
+        </div>
+        <div class="col-md-3">
+          <h4>
+            Contato
+          </h4>
+          <p>
+            Entre em contato conosco para saber mais sobre o POEV, tirar dúvidas ou enviar
+            sugestões. Estamos à disposição para ajudar! Você pode nos contatar pelos
+            e-mails: vinhedo@polo.univesp.br ou poev@poev.com.br
+          </p>
+        </div>
+        <div class="col-md-3">
+          <div class="info_social">
+            <h4>
+              Mídias Sociais
+            </h4>
+            <div class="social_container">
+              <div>
+                <a href="https://www.facebook.com/poev" target="_blank" rel="noopener noreferrer">
+                  <i class="fa fa-facebook" aria-hidden="true"></i>
+                </a>
+              </div>
+              <div>
+                <a href="https://twitter.com/poev" target="_blank" rel="noopener noreferrer">
+                 <i class="fa fa-twitter" aria-hidden="true"></i>
+                </a>
+              </div>
+              <div>
+                <a href="https://www.linkedin.com/in/poev/" target="_blank" rel="noopener noreferrer">
+                  <i class="fa fa-linkedin" aria-hidden="true"></i>
+                </a>
+              </div>
+              <div>
+                <a href="https://www.instagram.com/poev/" target="_blank" rel="noopener noreferrer">
+                  <i class="fa fa-instagram" aria-hidden="true"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="info_form">
+            <h4>
+              Newsletter
+            </h4>
+            <form action="">
+              <input type="text" placeholder="Digite seu Email" />
+              <button type="submit">
+                Assinar
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- end info_section -->
+
+  <!-- footer section -->
+  <footer class="footer_section">
+    <div class="container">
+      <p>Desenvolvido por alunos da <a href="https://www.univesp.br" target="_blank">Univesp</a> do Polo de Vinhedo, Campinas e Santa Bárbara D'Oeste &copy; 2025</p>
+    </div>
+  </footer>
+  <!-- footer section -->
+
+<script>
+// Função para destacar o menu ativo baseado na URL atual
+function highlightActiveMenu() {
+    const currentUrl = window.location.href;
+    const menuItems = {
+        'menu-inicio': "{% url 'homepage' %}",
+        'menu-sobre': "{% url 'sobre' %}",
+        'menu-contato': "{% url 'contato' %}",
+        'menu-vagas': "{% url 'todas_vagas' %}",
+        'menu-cursos': "{% url 'todos_cursos' %}",
+        'menu-pesquisa': "{% url 'pesquisa' %}",
+        'menu-login': "{% url 'login' %}",
+        'menu-registrar': "{% url 'registrar' %}"
+    };
+
+    // Remove a classe active de todos os itens primeiro
+    Object.keys(menuItems).forEach(menuId => {
+        const menuElement = document.getElementById(menuId);
+        if (menuElement) {
+            menuElement.classList.remove('active');
+        }
+    });
+
+    // Adiciona a classe active ao item correspondente à URL atual
+    Object.keys(menuItems).forEach(menuId => {
+        const menuUrl = menuItems[menuId];
+        if (currentUrl.includes(menuUrl) && menuUrl !== "{% url 'homepage' %}") {
+            const menuElement = document.getElementById(menuId);
+            if (menuElement) {
+                menuElement.classList.add('active');
+                return; // Para após encontrar o primeiro match
+            }
+        }
+    });
+
+    // Se não encontrou nenhum match e está na homepage, ativa o menu início
+    if (currentUrl === "{% url 'homepage' %}" || 
+        currentUrl.includes("{% url 'homepage' %}") && 
+        !Object.values(menuItems).some(url => currentUrl.includes(url) && url !== "{% url 'homepage' %}")) {
+        const inicioMenu = document.getElementById('menu-inicio');
+        if (inicioMenu) {
+            inicioMenu.classList.add('active');
+        }
+    }
+
+    // Tratamento especial para páginas de registro específicas
+    if (currentUrl.includes('registrar-aluno') || currentUrl.includes('registrar-empresa')) {
+        const registrarMenu = document.getElementById('menu-registrar');
+        if (registrarMenu) {
+            registrarMenu.classList.add('active');
+        }
+    }
+}
+
+// Executa quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', function() {
+    highlightActiveMenu();
+});
+
+// Também executa quando a página terminar de carregar completamente
+window.addEventListener('load', function() {
+    highlightActiveMenu();
+});
+
+// Executa também quando a URL muda (para SPA ou navegação via AJAX)
+window.addEventListener('popstate', function() {
+    highlightActiveMenu();
+});
+</script>

@@ -1,0 +1,207 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <title>Feedback • POEV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root{
+      --bg:#0f172a;           /* slate-900 */
+      --card:#111827;         /* gray-900 */
+      --muted:#9ca3af;        /* gray-400 */
+      --text:#e5e7eb;         /* gray-200 */
+      --primary:#60a5fa;      /* blue-400 */
+      --primary-strong:#2563eb; /* blue-600 */
+      --border:#1f2937;       /* gray-800 */
+      --accent:#0b1220;
+    }
+    *{box-sizing:border-box}
+    body { background:linear-gradient(180deg,var(--bg),#020617 60%); color:var(--text); font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial; margin:0; }
+    .wrap { max-width: 980px; margin: 32px auto; padding: 0 16px; }
+    .card { background: linear-gradient(180deg, var(--card), var(--accent)); border:1px solid var(--border); border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,.35); padding: 28px; }
+    h1 { margin: 0 0 8px; font-weight: 800; letter-spacing: .2px; }
+    .disclaimer { color: var(--muted); background: rgba(96,165,250,.09); border:1px solid rgba(96,165,250,.2); padding: 10px 12px; border-radius: 10px; margin: 12px 0 18px }
+    fieldset { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; }
+    legend { font-weight: 700; color: var(--text); padding: 0 8px; }
+    label { font-weight: 600; }
+    .row { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 12px; }
+    textarea, input[type="text"], input[type="email"], input[type="number"]{
+      width:100%; background:#0b1220; color:var(--text); border:1px solid var(--border); border-radius:10px; padding:10px 12px;
+    }
+    .actions { margin-top: 18px; }
+    button { padding: 12px 18px; border-radius: 12px; border:0; font-weight: 800; letter-spacing:.2px; cursor: pointer; background: linear-gradient(180deg, var(--primary), var(--primary-strong)); color:#fff; }
+    .help { color: var(--muted); font-size: .92rem; margin: 4px 0 10px }
+    .errorlist { color:#fda4af; margin:.2rem 0 .6rem 0; }
+
+    /* === MATRIZ LIKERT === */
+    .likert { width:100%; border-collapse: separate; border-spacing: 0; border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#0b1220; }
+    .likert thead th { background:#0b1220; color:var(--muted); padding:12px 6px; font-weight:700; text-align:center; border-bottom:1px solid var(--border); }
+    .likert thead th:first-child { text-align:left; padding-left:14px; color:var(--text); }
+    .likert tbody tr { border-bottom:1px solid var(--border); }
+    .likert tbody tr:last-child { border-bottom:0; }
+    .likert td { padding:12px 6px; text-align:center; }
+    .likert td.rowlabel { text-align:left; font-weight:600; color:var(--text); padding-left:14px; }
+    .likert .dot {
+      appearance:none; -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+      border:2px solid #cbd5e1; background:transparent; cursor:pointer; outline:none; display:inline-block;
+      transition: all .18s ease;
+    }
+    .likert .dot:hover { transform:scale(1.08); border-color:#93c5fd; }
+    .likert .dot:checked { background: var(--primary-strong); border-color: var(--primary-strong); box-shadow: 0 0 0 4px rgba(37,99,235,.2); }
+    .required-star{color:#93c5fd; font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Conte-nos sua Experiência no POEV</h1>
+      <p class="disclaimer">
+        O POEV – Portal de Oportunidades de Emprego em Vinhedo e região – foi criado para aproximar candidatos e empresas.
+        Este formulário é rápido e não coleta automaticamente seus dados pessoais (nome/e-mail) sem você fornecer.
+      </p>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        <!-- Q1 -->
+        <fieldset>
+          <legend>1) Satisfação geral <span class="required-star">*</span></legend>
+          {{ form.satisfacao_geral.errors }}
+          {{ form.satisfacao_geral }}
+        </fieldset>
+
+        <!-- Q2 - MATRIZ LIKERT -->
+        <fieldset>
+          <legend>2) Como você avalia os seguintes aspectos do site? <span class="required-star">*</span></legend>
+          <div class="help">(Dê uma nota de 1 a 5, sendo 1 = Muito Ruim e 5 = Excelente)</div>
+
+          <table class="likert">
+            <thead>
+              <tr>
+                <th>Aspecto</th>
+                {% for i in rating_scale %}
+                  <th>{{ i }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for name, label in rating_fields %}
+                {% with field=form[name] %}
+                <tr>
+                  <td class="rowlabel">{{ label }}</td>
+                  {% for i in rating_scale %}
+                    {# radio manual para ficar em grade #}
+                    <td>
+                      <input
+                        class="dot"
+                        type="radio"
+                        name="{{ field.html_name }}"
+                        id="{{ field.id_for_label }}_{{ i }}"
+                        value="{{ i }}"
+                        {% if field.value|stringformat:"s" == i|stringformat:"s" %}checked{% endif %}
+                      />
+                      <label for="{{ field.id_for_label }}_{{ i }}"></label>
+                    </td>
+                  {% endfor %}
+                </tr>
+                {% endwith %}
+              {% endfor %}
+            </tbody>
+          </table>
+        </fieldset>
+
+        <!-- Q3 -->
+        <fieldset>
+          <legend>3) Você encontrou algum problema durante sua visita ao site?</legend>
+          {{ form.teve_problema.errors }} {{ form.teve_problema }}
+          <div class="help">Se sim, descreva:</div>
+          {{ form.problema_outro.errors }} {{ form.problema_outro }}
+        </fieldset>
+
+        <!-- Q4–5 -->
+        <fieldset>
+          <legend>4) O que mais gostou no site?</legend>
+          {{ form.mais_gostou.errors }} {{ form.mais_gostou }}
+        </fieldset>
+        <fieldset>
+          <legend>5) O que você acha que poderia ser melhorado?</legend>
+          {{ form.melhorar.errors }} {{ form.melhorar }}
+        </fieldset>
+
+        <!-- Q6 -->
+        <fieldset>
+          <legend>6) NPS — recomendaria o site? (0 = Nada provável | 10 = Muito provável)</legend>
+          {{ form.nps.errors }} {{ form.nps }}
+        </fieldset>
+
+        <!-- Q7–11 -->
+        <fieldset class="row">
+          <div><label>7) O conteúdo atendeu às suas expectativas?</label>{{ form.conteudo_atendeu }}</div>
+          <div><label>8) O conteúdo foi útil?</label>{{ form.conteudo_util }}</div>
+          <div><label>9) A linguagem foi clara e de fácil compreensão?</label>{{ form.linguagem_clara }}</div>
+          <div><label>10) O nível de detalhamento das informações foi adequado?</label>{{ form.nivel_detalhe }}</div>
+          <div><label>11) Encontrou erros (ortografia, gramática ou infos incorretas)?</label>{{ form.encontrou_erros }} {{ form.erros_outros }}</div>
+        </fieldset>
+
+        <!-- Q12–13 -->
+        <fieldset>
+          <legend>12) Que tipo de conteúdo você gostaria de ver mais?</legend>
+          {{ form.conteudo_desejado }}
+        </fieldset>
+
+        <fieldset class="row">
+          <div>
+            <label>13) Atualização do conteúdo (1 = Muito Ruim | 5 = Excelente)</label>
+            {{ form.nota_atualizacao.errors }} {{ form.nota_atualizacao }}
+          </div>
+          <div>
+            <label>Se notou algo desatualizado, em qual área do site?</label>
+            {{ form.area_desatualizada }}
+          </div>
+        </fieldset>
+
+        <!-- Q14–17 -->
+        <fieldset class="row">
+          <div><label>14) Dispositivo utilizado</label>{{ form.dispositivo }}</div>
+          <div><label>15) Otimização no dispositivo</label>{{ form.otimizado_para_dispositivo }}</div>
+        </fieldset>
+
+        <fieldset>
+          <legend>16) Existe alguma funcionalidade que você gostaria que o site tivesse?</legend>
+          {{ form.funcionalidade_desejada }}
+        </fieldset>
+
+        <fieldset>
+          <legend>17) Como você conheceu nosso site?</legend>
+          {{ form.como_conheceu }}
+        </fieldset>
+
+        <!-- Q18 + contato -->
+        <fieldset>
+          <legend>18) Você gostaria de receber informações de novas vagas/atualizações?</legend>
+          {{ form.quer_receber_atualizacoes }} Sim
+        </fieldset>
+
+        <fieldset>
+          <legend>Dados de contato (opcional)</legend>
+          <p class="help">Forneça apenas se desejar receber contato e marque o consentimento.</p>
+          <div class="row">
+            <div><label>Nome</label>{{ form.nome_contato }}</div>
+            <div><label>E-mail</label>{{ form.email_contato }}</div>
+            <div><label>WhatsApp</label>{{ form.whatsapp_contato }}</div>
+          </div>
+          <div style="margin-top:.6rem">
+            {{ form.consentimento_contato }} Dou meu consentimento para uso do contato fornecido
+          </div>
+        </fieldset>
+
+        <div class="actions">
+          <button type="submit">Enviar feedback</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
+
